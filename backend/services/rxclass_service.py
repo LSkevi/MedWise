@@ -2,22 +2,28 @@ import httpx
 
 RXCLASS_BASE = "https://rxnav.nlm.nih.gov/REST/rxclass"
 
+# In-memory cache for disease list
+_disease_cache: list[dict] = []
 
-async def search_diseases(query: str) -> list[dict]:
-    """Search for diseases/conditions in RxClass."""
-    async with httpx.AsyncClient(timeout=15.0) as client:
+
+async def preload_disease_cache() -> None:
+    """Preload the disease cache at startup."""
+    global _disease_cache
+    print("Loading disease cache from RxClass...")
+    async with httpx.AsyncClient(timeout=60.0) as client:
         response = await client.get(
-            f"{RXCLASS_BASE}/class/byName.json",
-            params={"className": query, "classTypes": "DISEASE"},
+            f"{RXCLASS_BASE}/allClasses.json",
+            params={"classTypes": "DISEASE"},
         )
         if response.status_code != 200:
-            return []
+            print(f"Failed to load disease cache: {response.status_code}")
+            return
 
         data = response.json()
         class_list = (
             data.get("rxclassMinConceptList", {}).get("rxclassMinConcept", [])
         )
-        return [
+        _disease_cache = [
             {
                 "classId": c.get("classId", ""),
                 "className": c.get("className", ""),
@@ -25,6 +31,36 @@ async def search_diseases(query: str) -> list[dict]:
             }
             for c in class_list
         ]
+        print(f"Loaded {len(_disease_cache)} diseases into cache")
+
+
+async def search_diseases(query: str) -> list[dict]:
+    """Search for diseases/conditions with partial matching."""
+    if not _disease_cache:
+        await preload_disease_cache()
+    diseases = _disease_cache
+    query_lower = query.lower()
+
+    # Exact match first
+    exact = [d for d in diseases if d["className"].lower() == query_lower]
+    if exact:
+        return exact
+
+    # Starts-with match
+    starts_with = [
+        d for d in diseases if d["className"].lower().startswith(query_lower)
+    ]
+
+    # Contains match
+    contains = [
+        d
+        for d in diseases
+        if query_lower in d["className"].lower()
+        and d not in starts_with
+    ]
+
+    results = starts_with + contains
+    return results[:15]
 
 
 async def get_drugs_for_disease(class_id: str) -> list[dict]:
