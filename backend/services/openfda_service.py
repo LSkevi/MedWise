@@ -1,0 +1,45 @@
+import httpx
+
+OPENFDA_BASE = "https://api.fda.gov/drug/label.json"
+
+
+def _truncate(text: str | None, max_length: int = 1500) -> str | None:
+    """Truncate text to a reasonable length for API responses."""
+    if not text:
+        return None
+    if len(text) <= max_length:
+        return text
+    return text[:max_length] + "..."
+
+
+async def get_drug_label(drug_name: str) -> dict | None:
+    """Get FDA drug labeling information (indications, warnings, side effects)."""
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        response = await client.get(
+            OPENFDA_BASE,
+            params={
+                "search": f'openfda.generic_name:"{drug_name}"',
+                "limit": 1,
+            },
+        )
+        if response.status_code != 200:
+            return None
+
+        data = response.json()
+        results = data.get("results", [])
+        if not results:
+            return None
+
+        label = results[0]
+
+        def first_item(field: str) -> str | None:
+            items = label.get(field, [])
+            return items[0] if items else None
+
+        return {
+            "indications": _truncate(first_item("indications_and_usage")),
+            "contraindications": _truncate(first_item("contraindications")),
+            "warnings": _truncate(first_item("warnings")),
+            "adverse_reactions": _truncate(first_item("adverse_reactions")),
+            "dosage_administration": _truncate(first_item("dosage_and_administration")),
+        }
