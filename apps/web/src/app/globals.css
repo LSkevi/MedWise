@@ -2,7 +2,7 @@
 
 :root {
   --background: #F8FAFC;
-  --foreground: #1E293B;
+  --foreground: #0F172A;
   --card: #FFFFFF;
   --card-foreground: #1E293B;
   --primary: #2563EB;
@@ -17,25 +17,29 @@
   --ring: #2563EB;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
+  --success: #10B981;
+  --success-foreground: #FFFFFF;
 }
 
 .dark {
-  --background: #0F172A;
+  --background: #0B1120;
   --foreground: #F1F5F9;
-  --card: #1E293B;
-  --card-foreground: #F1F5F9;
+  --card: #162032;
+  --card-foreground: #E2E8F0;
   --primary: #3B82F6;
   --primary-foreground: #FFFFFF;
   --secondary: #60A5FA;
   --secondary-foreground: #0F172A;
   --accent: #FB923C;
   --accent-foreground: #0F172A;
-  --muted: #334155;
+  --muted: #1E293B;
   --muted-foreground: #94A3B8;
-  --border: #334155;
+  --border: #1E3A5F;
   --ring: #3B82F6;
   --destructive: #F87171;
   --destructive-foreground: #0F172A;
+  --success: #34D399;
+  --success-foreground: #0F172A;
 }
 
 @theme inline {
@@ -55,28 +59,32 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --font-sans: var(--font-figtree), "Geist", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --background: #0F172A;
+    --background: #0B1120;
     --foreground: #F1F5F9;
-    --card: #1E293B;
-    --card-foreground: #F1F5F9;
+    --card: #162032;
+    --card-foreground: #E2E8F0;
     --primary: #3B82F6;
     --primary-foreground: #FFFFFF;
     --secondary: #60A5FA;
     --secondary-foreground: #0F172A;
     --accent: #FB923C;
     --accent-foreground: #0F172A;
-    --muted: #334155;
+    --muted: #1E293B;
     --muted-foreground: #94A3B8;
-    --border: #334155;
+    --border: #1E3A5F;
     --ring: #3B82F6;
     --destructive: #F87171;
     --destructive-foreground: #0F172A;
+    --success: #34D399;
+    --success-foreground: #0F172A;
   }
 }
 
@@ -88,4 +96,28 @@ body {
 
 * {
   border-color: var(--border);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

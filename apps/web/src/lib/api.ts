@@ -44,6 +44,11 @@ export interface SymptomSearchResponse {
   suggestions: SymptomSuggestion[];
 }
 
+export interface AIInterpretation {
+  diseases: Array<{ name: string; confidence: number }>;
+  summary: string;
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "/server";
 
 export async function searchSymptoms(
@@ -67,6 +72,20 @@ export async function searchMedications(
   );
   if (!res.ok) {
     throw new Error(`Medication search failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function interpretSymptoms(
+  symptoms: string,
+): Promise<AIInterpretation> {
+  const res = await fetch("/api/interpret", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ symptoms }),
+  });
+  if (!res.ok) {
+    throw new Error(`AI interpretation failed: ${res.status}`);
   }
   return res.json();
 }
